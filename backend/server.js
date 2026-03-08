@@ -1,8 +1,8 @@
 const express = require('express');
-const cors    = require('cors');
-const helmet  = require('helmet');
-const path    = require('path');
-const fs      = require('fs');
+const cors = require('cors');
+const helmet = require('helmet');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 // Import your database connection
@@ -19,7 +19,7 @@ if (!fs.existsSync(uploadDir)) {
 
 // 2. MIDDLEWARE
 app.use(helmet({
-  crossOriginResourcePolicy: false, // Required to allow React to display images/PDFs from the backend
+    crossOriginResourcePolicy: false, // Required for React to display images/PDFs from the backend
 }));
 
 app.use(cors({
@@ -30,7 +30,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// STATIC FILES - This allows you to access http://localhost:5000/uploads/filename.pdf
+// STATIC FILES - Serves files from http://localhost:5000/uploads/
 app.use('/uploads', express.static(uploadDir));
 
 // 3. ROUTES
@@ -42,7 +42,7 @@ app.use('/api/settings', require('./routes/settings'));
 // 4. DATABASE SYNC & START SERVER
 const PORT = process.env.PORT || 5000;
 
-// Syncing ensures your tables (Users, Requests, etc.) match your Sequelize models
+// Syncing ensures your tables match your Sequelize models (Data Integrity)
 sequelize.sync({ alter: true }) 
   .then(() => {
     console.log('Database connected and synced');
