@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
-import PriorityBadge from '../components/PriorityBadge';
 import StatCard from '../components/StatCard';
 import api from '../services/api';
 import {
@@ -93,8 +92,8 @@ export default function AdminDashboard() {
 
   const filtered = requests.filter(r => {
     const matchSearch =
-      r.request_id?.toLowerCase().includes(search.toLowerCase()) ||
-      r.full_name?.toLowerCase().includes(search.toLowerCase())  ||
+      r.request_id?.toLowerCase().includes(search.toLowerCase())   ||
+      r.full_name?.toLowerCase().includes(search.toLowerCase())    ||
       r.service_type?.toLowerCase().includes(search.toLowerCase()) ||
       r.status?.toLowerCase().includes(search.toLowerCase());
     if (activeTab === 'pending')     return matchSearch && r.status === 'pending';
@@ -112,10 +111,10 @@ export default function AdminDashboard() {
 
   const tabs = [
     { key: 'all',         label: 'All Requests' },
-    { key: 'pending',     label: 'Pending' },
-    { key: 'in-progress', label: 'In Progress' },
-    { key: 'completed',   label: 'Completed' },
-    { key: 'users',       label: 'Users' },
+    { key: 'pending',     label: 'Pending'      },
+    { key: 'in-progress', label: 'In Progress'  },
+    { key: 'completed',   label: 'Completed'    },
+    { key: 'users',       label: 'Users'        },
   ];
 
   return (
@@ -126,10 +125,10 @@ export default function AdminDashboard() {
 
         {/* Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard title="Total Requests" value={stats.total}      subtitle="All service requests"   icon={<FileText    className="w-6 h-6" />} color="text-gray-400"   />
-          <StatCard title="Pending"        value={stats.pending}    subtitle="Awaiting review"        icon={<Clock       className="w-6 h-6" />} color="text-amber-400"  />
-          <StatCard title="In Progress"    value={stats.inProgress} subtitle="Being processed"       icon={<AlertCircle className="w-6 h-6" />} color="text-blue-400"   />
-          <StatCard title="Completed"      value={stats.completed}  subtitle="Successfully processed" icon={<CheckCircle className="w-6 h-6" />} color="text-green-400"  />
+          <StatCard title="Total Requests" value={stats.total}      subtitle="All service requests"   icon={<FileText    className="w-6 h-6" />} color="text-gray-400"  />
+          <StatCard title="Pending"        value={stats.pending}    subtitle="Awaiting review"        icon={<Clock       className="w-6 h-6" />} color="text-amber-400" />
+          <StatCard title="In Progress"    value={stats.inProgress} subtitle="Being processed"       icon={<AlertCircle className="w-6 h-6" />} color="text-blue-400"  />
+          <StatCard title="Completed"      value={stats.completed}  subtitle="Successfully processed" icon={<CheckCircle className="w-6 h-6" />} color="text-green-400" />
         </div>
 
         {/* Tabs */}
@@ -180,7 +179,6 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 text-sm text-gray-500">{u.email}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{u.phone || '-'}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{u.address || '-'}</td>
-                      {/* FIX: Changed 'r' to 'u' to correctly display User registration date */}
                       <td className="px-6 py-4 text-sm text-gray-500">{formatDate(u.createdAt || u.created_at)}</td>
                     </tr>
                   ))}
@@ -227,7 +225,7 @@ export default function AdminDashboard() {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
-                      {['Request ID', 'Name', 'Service Type', 'Priority', 'Status', 'Date Submitted', 'Actions'].map(h => (
+                      {['Request ID', 'Name', 'Service Type', 'Status', 'Date Submitted', 'Actions'].map(h => (
                         <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
                           {h}
                         </th>
@@ -236,17 +234,10 @@ export default function AdminDashboard() {
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {filtered.map(r => (
-                      /* NEW: Added conditional background highlighting for Urgent requests */
-                      <tr 
-                        key={r.id} 
-                        className={`transition-colors ${
-                          r.priority === 'urgent' ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50'
-                        }`}
-                      >
+                      <tr key={r.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 text-xs font-mono text-gray-500">{r.request_id}</td>
                         <td className="px-6 py-4 text-sm font-semibold text-gray-800">{r.full_name}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{r.service_type}</td>
-                        <td className="px-6 py-4"><PriorityBadge priority={r.priority} /></td>
                         <td className="px-6 py-4"><StatusBadge status={r.status} /></td>
                         <td className="px-6 py-4 text-sm text-gray-500">{formatDate(r.createdAt || r.created_at)}</td>
                         <td className="px-6 py-4">
@@ -272,32 +263,30 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 fade-in max-h-[90vh] overflow-y-auto">
 
-            {/* Modal Header */}
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-base font-bold text-gray-900">Request Details</h3>
-              <button onClick={() => { setSelected(null); setRemarks(''); setActionMsg(''); }}
-                className="text-gray-400 hover:text-gray-600">
+              <button
+                onClick={() => { setSelected(null); setRemarks(''); setActionMsg(''); }}
+                className="text-gray-400 hover:text-gray-600"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Success Message */}
             {actionMsg && (
               <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-xl mb-4 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" /> {actionMsg}
               </div>
             )}
 
-            {/* Request Info */}
             <div className="space-y-3 text-sm mb-5">
               {[
                 { label: 'Request ID',    value: <span className="font-mono text-xs">{selected.request_id}</span> },
-                { label: 'Resident Name', value: selected.full_name },
+                { label: 'Resident Name', value: selected.full_name    },
                 { label: 'Service Type',  value: selected.service_type },
-                { label: 'Purpose',       value: selected.purpose },
-                { label: 'Priority',      value: <PriorityBadge priority={selected.priority} /> },
+                { label: 'Purpose',       value: selected.purpose      },
                 { label: 'Status',        value: <StatusBadge status={selected.status} /> },
-                { label: 'Submitted',     value: formatDate(selected.created_at) },
+                { label: 'Submitted',     value: formatDate(selected.createdAt || selected.created_at) },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between items-start py-2 border-b border-gray-100">
                   <span className="text-gray-400 font-medium w-36 flex-shrink-0">{label}</span>
@@ -308,9 +297,7 @@ export default function AdminDashboard() {
 
             {/* Admin Remarks */}
             <div className="mb-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Admin Remarks
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Admin Remarks</label>
               <textarea
                 value={remarks}
                 onChange={e => setRemarks(e.target.value)}
@@ -322,8 +309,6 @@ export default function AdminDashboard() {
 
             {/* Action Buttons */}
             <div className="space-y-2">
-
-              {/* Set In Progress */}
               {selected.status === 'pending' && (
                 <button
                   onClick={() => updateStatus(selected.id, 'in-progress')}
@@ -335,7 +320,6 @@ export default function AdminDashboard() {
                 </button>
               )}
 
-              {/* Approve / Generate PDF */}
               {(selected.status === 'pending' || selected.status === 'in-progress') && (
                 <button
                   onClick={() => generatePDF(selected.id)}
@@ -347,7 +331,6 @@ export default function AdminDashboard() {
                 </button>
               )}
 
-              {/* Reject */}
               {selected.status !== 'completed' && selected.status !== 'rejected' && (
                 <button
                   onClick={() => updateStatus(selected.id, 'rejected')}
@@ -359,7 +342,6 @@ export default function AdminDashboard() {
                 </button>
               )}
 
-              {/* Download if completed */}
               {selected.status === 'completed' && selected.file_path && (
                 <a
                   href={`http://localhost:5000/${selected.file_path}`}
@@ -371,7 +353,6 @@ export default function AdminDashboard() {
                 </a>
               )}
 
-              {/* Close */}
               <button
                 onClick={() => { setSelected(null); setRemarks(''); setActionMsg(''); }}
                 className="w-full border border-gray-200 text-gray-500 font-semibold py-2.5 rounded-xl hover:bg-gray-50 transition text-sm"
@@ -382,7 +363,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Building2 } from 'lucide-react';
+import { Building2, UserCircle, LogOut } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -27,26 +27,42 @@ export default function Navbar() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
             <p className="text-xs text-gray-400">{user?.email}</p>
           </div>
+
+          {/* Admin: Settings + Logout buttons */}
           {user?.role === 'admin' && (
-  <button
-    onClick={() => navigate('/settings')}
-    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all"
-  >
-    Settings
-  </button>
-)}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-500 hover:border-red-300 transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+            <>
+              <button
+                onClick={() => navigate('/settings')}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all"
+              >
+                Settings
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-500 hover:border-red-300 transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </>
+          )}
+
+          {/* Resident: Profile button (logout is inside profile) */}
+          {user?.role === 'user' && (
+            <button
+              onClick={() => navigate('/profile')}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all"
+            >
+              <UserCircle className="w-4 h-4" />
+              Profile
+            </button>
+          )}
         </div>
       </div>
     </nav>

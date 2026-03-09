@@ -7,10 +7,6 @@ const ServiceRequest = db.define('ServiceRequest', {
   full_name:    { type: DataTypes.STRING,  allowNull: false },
   service_type: { type: DataTypes.STRING,  allowNull: false },
   purpose:      { type: DataTypes.TEXT },
-  priority: {
-    type:         DataTypes.ENUM('normal', 'high', 'urgent'),
-    defaultValue: 'normal'
-  },
   status: {
     type:         DataTypes.ENUM('pending', 'in-progress', 'completed', 'rejected'),
     defaultValue: 'pending'

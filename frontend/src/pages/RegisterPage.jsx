@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building2, Eye, EyeOff } from 'lucide-react';
+import { Building2, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -13,7 +13,8 @@ export default function RegisterPage() {
   const [loading,     setLoading]     = useState(false);
 
   const [form, setForm] = useState({
-    full_name:        '',
+    first_name:       '',
+    last_name:        '',
     email:            '',
     password:         '',
     confirm_password: '',
@@ -41,8 +42,9 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
+      const full_name = `${form.first_name.trim()} ${form.last_name.trim()}`;
       await register({
-        full_name: form.full_name,
+        full_name,
         email:     form.email,
         password:  form.password,
         address:   form.address,
@@ -72,24 +74,59 @@ export default function RegisterPage() {
           </p>
         </div>
 
+        {/* Important Notice */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 mb-5">
+          <div className="flex gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700">
+              <strong>Use your real, correct name.</strong> Your full name will appear on official barangay documents and must match barangay records. Incorrect names will result in rejected requests.
+            </p>
+          </div>
+        </div>
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Full Name */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Full Name <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              name="full_name"
-              value={form.full_name}
-              onChange={handleChange}
-              placeholder="First and Last Name"
-              required
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition"
-            />
+          {/* First Name and Last Name */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                First Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                name="first_name"
+                value={form.first_name}
+                onChange={handleChange}
+                placeholder="Juan"
+                required
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Last Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                name="last_name"
+                value={form.last_name}
+                onChange={handleChange}
+                placeholder="Dela Cruz"
+                required
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent transition"
+              />
+            </div>
           </div>
+
+          {/* Full name preview */}
+          {(form.first_name || form.last_name) && (
+            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+              <p className="text-xs text-blue-600">
+                Your name will appear as: <strong>{form.first_name} {form.last_name}</strong>
+              </p>
+            </div>
+          )}
 
           {/* Email */}
           <div>
@@ -132,8 +169,6 @@ export default function RegisterPage() {
                 </button>
               </div>
             </div>
-
-            {/* Confirm Password */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Confirm Password <span className="text-red-400">*</span>
@@ -178,9 +213,7 @@ export default function RegisterPage() {
           {/* Phone and Birthdate */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Phone Number
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
               <input
                 type="tel"
                 name="phone"
@@ -191,9 +224,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Date of Birth
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date of Birth</label>
               <input
                 type="date"
                 name="birthdate"
@@ -226,7 +257,6 @@ export default function RegisterPage() {
               'Create Account'
             )}
           </button>
-
         </form>
 
         {/* Login Link */}
@@ -236,7 +266,6 @@ export default function RegisterPage() {
             Sign in here
           </Link>
         </p>
-
       </div>
     </div>
   );

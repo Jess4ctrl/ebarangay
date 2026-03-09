@@ -1,16 +1,11 @@
 const { ServiceRequest, User } = require('../models/index');
 const { generateDocument }     = require('../services/pdfService');
-const { Sequelize }             = require('sequelize'); // Import Sequelize for custom sorting
+const { sendStatusEmail }      = require('../services/emailService');
 
 exports.getAllRequests = async (req, res) => {
   try {
     const requests = await ServiceRequest.findAll({
-      // Custom ordering: Urgent first, then High, then Normal.
-      // Within each priority group, the newest requests appear first.
-      order: [
-        [Sequelize.literal("FIELD(priority, 'urgent', 'high', 'normal')"), 'ASC'],
-        ['created_at', 'DESC']
-      ],
+      order: [['created_at', 'DESC']],
     });
     res.json(requests);
   } catch (err) {
@@ -46,6 +41,23 @@ exports.updateRequest = async (req, res) => {
       admin_remarks: admin_remarks || request.admin_remarks,
     });
 
+    // Send email to resident on status change
+    try {
+      const resident = await User.findByPk(request.user_id);
+      if (resident) {
+        await sendStatusEmail(
+          resident.email,
+          resident.full_name,
+          request.request_id,
+          request.service_type,
+          status,
+          admin_remarks || '' // pass admin remarks so resident sees them in email
+        );
+      }
+    } catch (emailErr) {
+      console.error('Resident notification email error:', emailErr.message);
+    }
+
     res.json({
       message: 'Request updated successfully',
       request,
@@ -74,6 +86,19 @@ exports.generatePDF = async (req, res) => {
       file_path: filePath,
       status:    'completed',
     });
+
+    // Send email to resident that document is ready
+    try {
+      await sendStatusEmail(
+        user.email,
+        user.full_name,
+        request.request_id,
+        request.service_type,
+        'completed'
+      );
+    } catch (emailErr) {
+      console.error('Completion email error:', emailErr.message);
+    }
 
     res.json({
       message:  'Document generated successfully',

@@ -1,34 +1,35 @@
-const { ServiceRequest } = require('../models/index');
-
-// 1. Helper function for automated priority assignment
-const getAutoPriority = (serviceType) => {
-  switch (serviceType) {
-    case 'Complaint':
-      return 'urgent';
-    case 'Certificate of Indigency':
-      return 'high';
-    default:
-      return 'normal';
-  }
-};
+const { ServiceRequest, User } = require('../models/index');
+const { sendStatusEmail }      = require('../services/emailService');
 
 exports.submitRequest = async (req, res) => {
   try {
-    // 2. Remove 'priority' from the destructured body to ignore user input
     const { request_id, service_type, purpose, full_name } = req.body;
-
-    // 3. Automatically determine priority based on service_type
-    const assignedPriority = getAutoPriority(service_type);
 
     const request = await ServiceRequest.create({
       request_id,
       user_id:      req.user.id,
       service_type,
       purpose,
-      priority:     assignedPriority, // Server-assigned priority
       full_name,
-      status:       'pending',
+      status: 'pending',
     });
+
+    // Notify admin that a new request was submitted
+    try {
+      const admin = await User.findOne({ where: { role: 'admin' } });
+      if (admin) {
+        await sendStatusEmail(
+          admin.email,
+          admin.full_name,
+          request_id,
+          service_type,
+          'new-request',
+          full_name // pass resident name so admin knows who submitted
+        );
+      }
+    } catch (emailErr) {
+      console.error('Admin notification email error:', emailErr.message);
+    }
 
     res.status(201).json({
       message: 'Request submitted successfully',
@@ -43,8 +44,8 @@ exports.submitRequest = async (req, res) => {
 exports.getMyRequests = async (req, res) => {
   try {
     const requests = await ServiceRequest.findAll({
-      where:   { user_id: req.user.id },
-      order:   [['created_at', 'DESC']],
+      where: { user_id: req.user.id },
+      order: [['created_at', 'DESC']],
     });
     res.json(requests);
   } catch (err) {
