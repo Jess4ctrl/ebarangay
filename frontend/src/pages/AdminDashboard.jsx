@@ -19,6 +19,7 @@ export default function AdminDashboard() {
   const [updating,    setUpdating]    = useState(false);
   const [generating,  setGenerating]  = useState(false);
   const [actionMsg,   setActionMsg]   = useState('');
+  const [userSearch,  setUserSearch]  = useState('');
 
   useEffect(() => {
     fetchRequests();
@@ -160,6 +161,18 @@ export default function AdminDashboard() {
               <h2 className="text-base font-bold text-gray-900">Registered Users</h2>
               <p className="text-sm text-gray-400 mt-0.5">All resident accounts in the system</p>
             </div>
+            <div className="px-6 py-4 border-b border-gray-100">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search by name, email, or phone..."
+                  value={userSearch}
+                  onChange={e => setUserSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-secondary transition"
+                />
+              </div>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-100">
@@ -172,7 +185,12 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {users.filter(u => u.role === 'user').map(u => (
+                  {users.filter(u => u.role === 'user' && (
+                    !userSearch ||
+                    u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+                    u.email?.toLowerCase().includes(userSearch.toLowerCase())     ||
+                    u.phone?.toLowerCase().includes(userSearch.toLowerCase())
+                  )).map(u => (
                     <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 text-xs font-mono text-gray-400">{u.id}</td>
                       <td className="px-6 py-4 text-sm font-semibold text-gray-800">{u.full_name}</td>
