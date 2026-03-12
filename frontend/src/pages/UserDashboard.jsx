@@ -212,7 +212,7 @@ export default function UserDashboard() {
                               </button>
                               {r.status === 'completed' && r.file_path && (
                                 <a
-                                  href={`http://localhost:5000/${r.file_path}`}
+                                  href={`${import.meta.env.VITE_API_URL}/${r.file_path}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="flex items-center gap-1 text-xs text-green-600 hover:underline font-medium"
@@ -377,7 +377,7 @@ export default function UserDashboard() {
             </div>
             {viewRequest.status === 'completed' && viewRequest.file_path && (
               <a
-                href={`http://localhost:5000/${viewRequest.file_path}`}
+                href={`${import.meta.env.VITE_API_URL}/${viewRequest.file_path}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-xl transition"

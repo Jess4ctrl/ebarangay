@@ -362,7 +362,7 @@ export default function AdminDashboard() {
 
               {selected.status === 'completed' && selected.file_path && (
                 <a
-                  href={`http://localhost:5000/${selected.file_path}`}
+                  href={`${import.meta.env.VITE_API_URL}/${selected.file_path}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-blue-900 text-white font-bold py-2.5 rounded-xl transition text-sm"
