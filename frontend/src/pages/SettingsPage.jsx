@@ -79,7 +79,7 @@ export default function SettingsPage() {
       const formData = new FormData();
       formData.append('signature', blob, 'signature.png');
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/settings/signature', {
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/settings/signature', {
         method:  'POST',
         headers: { Authorization: `Bearer ${token}` },
         body:    formData,
@@ -251,7 +251,7 @@ export default function SettingsPage() {
                     src={
                       currentSignature.startsWith('data:')
                         ? currentSignature
-                        : `http://localhost:5000/uploads/${currentSignature.replace('uploads/', '')}`
+                        : `${import.meta.env.VITE_API_URL}/uploads/${currentSignature.replace('uploads/', '')}`
                     }
                     alt="Saved signature"
                     className="max-h-20 object-contain"
