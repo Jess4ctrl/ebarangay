@@ -118,6 +118,10 @@ export default function SettingsPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
 
+        {/* Back Button */}
+        <button onClick={() => window.history.back()} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+          ← Back
+        </button>
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Barangay Settings</h1>
