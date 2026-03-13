@@ -306,7 +306,6 @@ export default function UserDashboard() {
                     <option value="Certificate of Indigency">Certificate of Indigency</option>
                     <option value="Certificate of Residency">Certificate of Residency</option>
                     <option value="Barangay Business Permit">Barangay Business Permit</option>
-                    <option value="Complaint">Complaint</option>
                   </select>
                 </div>
 
