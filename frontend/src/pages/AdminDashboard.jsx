@@ -111,11 +111,13 @@ export default function AdminDashboard() {
   };
 
   const filtered = requests.filter(r => {
+    const dateStr = formatDate(r.createdAt || r.created_at).toLowerCase();
     const matchSearch =
       r.request_id?.toLowerCase().includes(search.toLowerCase())   ||
       r.full_name?.toLowerCase().includes(search.toLowerCase())    ||
       r.service_type?.toLowerCase().includes(search.toLowerCase()) ||
-      r.status?.toLowerCase().includes(search.toLowerCase());
+      r.status?.toLowerCase().includes(search.toLowerCase())       ||
+      dateStr.includes(search.toLowerCase());
     if (activeTab === 'pending')     return matchSearch && r.status === 'pending';
     if (activeTab === 'in-progress') return matchSearch && r.status === 'in-progress';
     if (activeTab === 'completed')   return matchSearch && r.status === 'completed';
