@@ -13,12 +13,12 @@ const PurposeCell = ({ text }) => {
   if (!text) return <span className="text-gray-800">—</span>;
   const isLong = text.length > 40;
   return (
-    <span className="text-gray-800 text-right">
+    <span className="text-gray-800 text-right break-all max-w-xs block">
       {isLong && !expanded ? text.slice(0, 40) + '...' : text}
       {isLong && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="ml-2 text-xs text-blue-500 hover:underline"
+          className="ml-1 text-xs text-blue-500 hover:underline"
         >
           {expanded ? 'Hide' : 'View'}
         </button>
