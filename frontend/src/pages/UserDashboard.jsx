@@ -48,13 +48,15 @@ export default function UserDashboard() {
     setSubmitting(true);
     try {
       const requestId = `REQ-${Date.now()}`;
+      const finalPurpose = form.purpose === 'Others' ? form.customPurpose : form.purpose;
       await api.post('/requests', {
         ...form,
+        purpose: finalPurpose,
         request_id: requestId,
         full_name:  user.name,
       });
       setSuccess('Request submitted successfully!');
-      setForm({ service_type: '', purpose: '' });
+      setForm({ service_type: '', purpose: '', customPurpose: '' });
       fetchRequests();
       setTimeout(() => {
         setSuccess('');
@@ -314,16 +316,58 @@ export default function UserDashboard() {
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Purpose <span className="text-red-400">*</span>
                   </label>
-                  <textarea
+                  <select
                     name="purpose"
                     value={form.purpose}
                     onChange={handleChange}
-                    rows={3}
-                    placeholder="e.g. For employment requirements, For school enrollment, For loan application..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-secondary transition resize-none"
-                    required
-                  />
-                  <p className="text-xs text-gray-400 mt-1">This will appear word-for-word on your document. Be specific.</p>
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-secondary transition"
+                    required={form.purpose !== 'Others'}
+                  >
+                    <option value="">Select a purpose...</option>
+                    {form.service_type === 'Barangay Clearance' && <>
+                      <option>For Employment</option>
+                      <option>For Travel Abroad</option>
+                      <option>For Bank Requirement</option>
+                      <option>For Scholarship Application</option>
+                      <option>For Loan Application</option>
+                      <option>For Government Requirement</option>
+                      <option value="Others">Others (please specify)</option>
+                    </>}
+                    {form.service_type === 'Certificate of Residency' && <>
+                      <option>For School Enrollment</option>
+                      <option>For Voter Registration</option>
+                      <option>For Bank Requirement</option>
+                      <option>For Government Requirement</option>
+                      <option>For Scholarship Application</option>
+                      <option value="Others">Others (please specify)</option>
+                    </>}
+                    {form.service_type === 'Certificate of Indigency' && <>
+                      <option>For Medical Assistance</option>
+                      <option>For Scholarship Application</option>
+                      <option>For Government Assistance</option>
+                      <option>For School Enrollment</option>
+                      <option value="Others">Others (please specify)</option>
+                    </>}
+                    {form.service_type === 'Barangay Business Permit' && <>
+                      <option>For New Business Registration</option>
+                      <option>For Business Permit Renewal</option>
+                      <option>For Business Inspection Requirement</option>
+                      <option value="Others">Others (please specify)</option>
+                    </>}
+                    {!form.service_type && <option disabled>Please select a service type first</option>}
+                  </select>
+                  {form.purpose === 'Others' && (
+                    <textarea
+                      name="purpose"
+                      value={form.customPurpose || ''}
+                      onChange={e => setForm({...form, customPurpose: e.target.value})}
+                      rows={2}
+                      placeholder="Please specify your purpose..."
+                      className="w-full mt-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-secondary transition resize-none"
+                      required
+                    />
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">This will appear word-for-word on your document.</p>
                 </div>
 
                 <button
