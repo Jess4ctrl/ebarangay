@@ -8,7 +8,7 @@ import api from '../services/api';
 import { FileText, Clock, CheckCircle, AlertCircle, Search, Eye, Download, X, XCircle, AlertTriangle } from 'lucide-react';
 
 const PurposeCell = ({ text }) => {
-  const [expanded, setExpanded] = React.useState(false);
+  const [expanded, setExpanded] = useState(false);
   if (!text) return <span className="text-gray-800">—</span>;
   const isLong = text.length > 40;
   return (
