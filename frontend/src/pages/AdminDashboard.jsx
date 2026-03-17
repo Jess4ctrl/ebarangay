@@ -8,6 +8,25 @@ import {
   Search, Eye, X, Check, XCircle, Loader
 } from 'lucide-react';
 
+const PurposeCell = ({ text }) => {
+  const [expanded, setExpanded] = React.useState(false);
+  if (!text) return <span className="text-gray-800">—</span>;
+  const isLong = text.length > 40;
+  return (
+    <span className="text-gray-800 text-right">
+      {isLong && !expanded ? text.slice(0, 40) + '...' : text}
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="ml-2 text-xs text-blue-500 hover:underline"
+        >
+          {expanded ? 'Hide' : 'View'}
+        </button>
+      )}
+    </span>
+  );
+};
+
 export default function AdminDashboard() {
   const [activeTab,   setActiveTab]   = useState('all');
   const [requests,    setRequests]    = useState([]);
@@ -302,7 +321,7 @@ export default function AdminDashboard() {
                 { label: 'Request ID',    value: <span className="font-mono text-xs">{selected.request_id}</span> },
                 { label: 'Resident Name', value: selected.full_name    },
                 { label: 'Service Type',  value: selected.service_type },
-                { label: 'Purpose',       value: selected.purpose      },
+                { label: 'Purpose',       value: <PurposeCell text={selected.purpose} /> },
                 { label: 'Status',        value: <StatusBadge status={selected.status} /> },
                 { label: 'Submitted',     value: formatDate(selected.createdAt || selected.created_at) },
               ].map(({ label, value }) => (

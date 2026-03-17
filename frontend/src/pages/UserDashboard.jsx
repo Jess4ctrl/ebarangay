@@ -7,6 +7,25 @@ import StatCard from '../components/StatCard';
 import api from '../services/api';
 import { FileText, Clock, CheckCircle, AlertCircle, Search, Eye, Download, X, XCircle, AlertTriangle } from 'lucide-react';
 
+const PurposeCell = ({ text }) => {
+  const [expanded, setExpanded] = React.useState(false);
+  if (!text) return <span className="text-gray-800">—</span>;
+  const isLong = text.length > 40;
+  return (
+    <span className="text-gray-800 text-right">
+      {isLong && !expanded ? text.slice(0, 40) + '...' : text}
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="ml-2 text-xs text-blue-500 hover:underline"
+        >
+          {expanded ? 'Hide' : 'View'}
+        </button>
+      )}
+    </span>
+  );
+};
+
 export default function UserDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -403,7 +422,7 @@ export default function UserDashboard() {
                 { label: 'Request ID',     value: viewRequest.request_id   },
                 { label: 'Type',           value: viewRequest.service_type },
                 { label: 'Status',         value: <StatusBadge   status={viewRequest.status}     /> },
-                { label: 'Purpose',        value: viewRequest.purpose      },
+                { label: 'Purpose',        value: <PurposeCell text={viewRequest.purpose} /> },
                 { label: 'Date Submitted', value: formatDate(viewRequest.createdAt || viewRequest.created_at) },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between items-start py-2 border-b border-gray-100">
