@@ -104,6 +104,13 @@ export default function UserDashboard() {
     }
   };
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('en-PH', {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  };
+
   // Filter by search (ID, type, status, date) AND status tab
   const filtered = requests.filter(r => {
     const dateStr = formatDate(r.createdAt || r.created_at).toLowerCase();
