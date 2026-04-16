@@ -18,7 +18,7 @@ exports.getAllRequests = async (req, res) => {
       }],
       attributes: {
         include: [
-          [sequelize.fn('COUNT', sequelize.col('DocumentDownloads.id')), 'download_count'],
+          [sequelize.fn('SUM', sequelize.col('DocumentDownloads.download_count')), 'download_count'],
           [sequelize.fn('MAX', sequelize.col('DocumentDownloads.last_downloaded')), 'last_downloaded'],
         ]
       },

@@ -72,20 +72,23 @@ exports.trackDownload = async (req, res) => {
     const { request_id } = req.params;
     const user_id = req.user.id;
 
-    console.log('🔄 Download tracking called:', { request_id, user_id });
+    console.log('🔄 Download tracking called:', { request_id: request_id, request_id_type: typeof request_id, user_id });
 
     // Find existing download record
     const existingDownload = await DocumentDownload.findOne({
-      where: { request_id, user_id }
+      where: { request_id: parseInt(request_id), user_id }
     });
 
+    console.log('🔍 Existing download found:', !!existingDownload);
+
     if (existingDownload) {
+      const newCount = existingDownload.download_count + 1;
       // Increment download count and update last downloaded time
       await existingDownload.update({
-        download_count: existingDownload.download_count + 1,
+        download_count: newCount,
         last_downloaded: new Date()
       });
-      console.log('✅ Download count incremented:', existingDownload.download_count + 1);
+      console.log('✅ Download count incremented:', { old: existingDownload.download_count, new: newCount });
       res.json({
         message: 'Download tracked',
         download: existingDownload
@@ -93,12 +96,12 @@ exports.trackDownload = async (req, res) => {
     } else {
       // Create new download record
       const newDownload = await DocumentDownload.create({
-        request_id,
+        request_id: parseInt(request_id),
         user_id,
         download_count: 1,
         last_downloaded: new Date()
       });
-      console.log('✅ New download record created');
+      console.log('✅ New download record created:', { id: newDownload.id, request_id: newDownload.request_id });
       res.status(201).json({
         message: 'Download tracked',
         download: newDownload
@@ -108,4 +111,4 @@ exports.trackDownload = async (req, res) => {
     console.error('❌ Download tracking error:', err);
     res.status(500).json({ message: 'Server error tracking download' });
   }
-};
+};;
