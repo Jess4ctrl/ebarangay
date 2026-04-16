@@ -23,4 +23,17 @@ router.get('/debug/tables', async (req, res) => {
   }
 });
 
+router.get('/debug/downloads', async (req, res) => {
+  try {
+    const { DocumentDownload } = require('../models/index');
+    const downloads = await DocumentDownload.findAll({
+      order: [['created_at', 'DESC']],
+      limit: 20
+    });
+    res.json({ downloads, count: downloads.length });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
+
 module.exports = router;

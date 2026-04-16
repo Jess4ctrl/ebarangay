@@ -35,6 +35,12 @@ exports.getAllRequests = async (req, res) => {
       last_downloaded: r.last_downloaded || null,
     }));
 
+    console.log('📊 Admin requests with download counts:', formattedRequests.slice(0, 3).map(r => ({
+      id: r.id,
+      request_id: r.request_id,
+      download_count: r.download_count
+    })));
+
     res.json(formattedRequests);
   } catch (err) {
     console.error(err);
