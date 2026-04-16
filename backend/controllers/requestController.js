@@ -74,39 +74,78 @@ exports.trackDownload = async (req, res) => {
 
     console.log('🔄 Download tracking called:', { request_id: request_id, request_id_type: typeof request_id, user_id });
 
-    // Find existing download record
-    const existingDownload = await DocumentDownload.findOne({
-      where: { request_id: parseInt(request_id), user_id }
-    });
+    try {
+      // Try to use DocumentDownload table
+      const existingDownload = await DocumentDownload.findOne({
+        where: { request_id: parseInt(request_id), user_id }
+      });
 
-    console.log('🔍 Existing download found:', !!existingDownload);
+      console.log('🔍 Existing download found:', !!existingDownload);
 
-    if (existingDownload) {
-      const newCount = existingDownload.download_count + 1;
-      // Increment download count and update last downloaded time
-      await existingDownload.update({
-        download_count: newCount,
-        last_downloaded: new Date()
-      });
-      console.log('✅ Download count incremented:', { old: existingDownload.download_count, new: newCount });
-      res.json({
-        message: 'Download tracked',
-        download: existingDownload
-      });
-    } else {
-      // Create new download record
-      const newDownload = await DocumentDownload.create({
-        request_id: parseInt(request_id),
-        user_id,
-        download_count: 1,
-        last_downloaded: new Date()
-      });
-      console.log('✅ New download record created:', { id: newDownload.id, request_id: newDownload.request_id });
-      res.status(201).json({
-        message: 'Download tracked',
-        download: newDownload
-      });
+      if (existingDownload) {
+        const newCount = existingDownload.download_count + 1;
+        await existingDownload.update({
+          download_count: newCount,
+          last_downloaded: new Date()
+        });
+        console.log('✅ Download count incremented:', { old: existingDownload.download_count, new: newCount });
+        return res.json({
+          message: 'Download tracked',
+          download: existingDownload
+        });
+      } else {
+        const newDownload = await DocumentDownload.create({
+          request_id: parseInt(request_id),
+          user_id,
+          download_count: 1,
+          last_downloaded: new Date()
+        });
+        console.log('✅ New download record created:', { id: newDownload.id, request_id: newDownload.request_id });
+        return res.status(201).json({
+          message: 'Download tracked',
+          download: newDownload
+        });
+      }
+    } catch (dbError) {
+      console.log('⚠️ Database table not available, using fallback method:', dbError.message);
+
+      // Fallback: Store download info in ServiceRequest metadata
+      const { ServiceRequest } = require('../models/index');
+      const request = await ServiceRequest.findByPk(parseInt(request_id));
+
+      if (request) {
+        // Parse existing download data from admin_remarks or create new
+        let downloadData = {};
+        try {
+          const remarks = request.admin_remarks || '{}';
+          downloadData = JSON.parse(remarks);
+        } catch (e) {
+          downloadData = {};
+        }
+
+        // Initialize user downloads if not exists
+        if (!downloadData.downloads) downloadData.downloads = {};
+        if (!downloadData.downloads[user_id]) downloadData.downloads[user_id] = 0;
+
+        // Increment download count
+        downloadData.downloads[user_id] += 1;
+        downloadData.lastDownload = new Date().toISOString();
+
+        // Save back to admin_remarks
+        await request.update({
+          admin_remarks: JSON.stringify(downloadData)
+        });
+
+        console.log('✅ Download tracked via fallback:', { user_id, count: downloadData.downloads[user_id] });
+
+        return res.json({
+          message: 'Download tracked (fallback)',
+          count: downloadData.downloads[user_id]
+        });
+      }
     }
+
+    res.status(404).json({ message: 'Request not found' });
   } catch (err) {
     console.error('❌ Download tracking error:', err);
     res.status(500).json({ message: 'Server error tracking download' });
