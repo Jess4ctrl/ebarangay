@@ -1,0 +1,49 @@
+# E-Barangay Service Portal - Setup Requirements
+
+# SYSTEM REQUIREMENTS
+- Node.js v18 or higher
+- npm v9 or higher
+- MySQL 8.0
+- Docker Desktop (for containerized setup)
+- Git
+
+# BACKEND DEPENDENCIES (auto-installed via npm install)
+- express
+- sequelize
+- mysql2
+- bcryptjs
+- jsonwebtoken
+- nodemailer
+- pdfkit
+- multer
+- cors
+- dotenv
+
+# FRONTEND DEPENDENCIES (auto-installed via npm install)
+- react
+- react-dom
+- vite
+- tailwindcss
+- axios
+- react-router-dom
+- lucide-react
+
+# STEPS TO INSTALL AND RUN
+
+1. Clone the repo:
+   git clone https://github.com/Jess4ctrl/ebarangay.git
+
+2. Go to project folder:
+   cd ebarangay
+
+3. Create .env file in root and backend/ folder with your credentials
+
+4. Option A - Run with Docker:
+   docker-compose up -d
+
+4. Option B - Run manually:
+   Backend: cd backend && npm install && npm start
+   Frontend: cd frontend && npm install && npm run dev
+
+5. Open browser:
+   http://localhost:5173
