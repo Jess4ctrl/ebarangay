@@ -84,14 +84,14 @@ exports.trackDownload = async (req, res) => {
 
       if (existingDownload) {
         const newCount = existingDownload.download_count + 1;
-        await existingDownload.update({
+        const updatedDownload = await existingDownload.update({
           download_count: newCount,
           last_downloaded: new Date()
         });
         console.log('✅ Download count incremented:', { old: existingDownload.download_count, new: newCount });
         return res.json({
           message: 'Download tracked',
-          download: existingDownload
+          download: updatedDownload
         });
       } else {
         const newDownload = await DocumentDownload.create({

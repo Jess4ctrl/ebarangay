@@ -5,69 +5,62 @@ const sequelize = require('sequelize');
 
 exports.getAllRequests = async (req, res) => {
   try {
-    let requests;
+    const requests = await ServiceRequest.findAll({
+      order: [['created_at', 'DESC']],
+      raw: true,
+    });
+
+    let downloadCounts = {};
+    let downloadLast = {};
+    let documentDownloadTableAvailable = true;
 
     try {
-      // Try to get requests with DocumentDownload table
-      requests = await ServiceRequest.findAll({
+      const downloadRows = await DocumentDownload.findAll({
         attributes: [
-          'id', 'request_id', 'user_id', 'full_name', 'service_type',
-          'purpose', 'status', 'admin_remarks', 'file_path', 'created_at', 'updated_at'
+          'request_id',
+          [sequelize.fn('SUM', sequelize.col('download_count')), 'total_downloads'],
+          [sequelize.fn('MAX', sequelize.col('last_downloaded')), 'last_downloaded'],
         ],
-        include: [{
-          model: DocumentDownload,
-          attributes: [],
-          required: false,
-          duplicating: false,
-        }],
-        attributes: {
-          include: [
-            [sequelize.fn('SUM', sequelize.col('DocumentDownloads.download_count')), 'download_count'],
-            [sequelize.fn('MAX', sequelize.col('DocumentDownloads.last_downloaded')), 'last_downloaded'],
-          ]
-        },
-        group: ['ServiceRequest.id'],
-        order: [['created_at', 'DESC']],
-        subQuery: false,
+        group: ['request_id'],
         raw: true,
+      });
+
+      downloadRows.forEach(row => {
+        downloadCounts[row.request_id] = parseInt(row.total_downloads, 10) || 0;
+        downloadLast[row.request_id] = row.last_downloaded || null;
       });
     } catch (dbError) {
-      console.log('⚠️ DocumentDownload table not available, using fallback method');
+      documentDownloadTableAvailable = false;
+      console.log('⚠️ DocumentDownload table not available, falling back to admin_remarks:', dbError.message);
+    }
 
-      // Fallback: Get requests without download data, then calculate from admin_remarks
-      requests = await ServiceRequest.findAll({
-        order: [['created_at', 'DESC']],
-        raw: true,
-      });
+    const formattedRequests = requests.map(request => {
+      let downloadCount = downloadCounts[request.id] || 0;
+      let lastDownloaded = downloadLast[request.id] || null;
 
-      // Calculate download counts from admin_remarks
-      requests = requests.map(request => {
-        let downloadCount = 0;
-        let lastDownloaded = null;
-
+      if (!documentDownloadTableAvailable) {
         try {
           const remarks = request.admin_remarks;
           if (remarks) {
             const downloadData = JSON.parse(remarks);
             if (downloadData.downloads) {
-              // Sum all user downloads for this request
               downloadCount = Object.values(downloadData.downloads).reduce((sum, count) => sum + count, 0);
-              lastDownloaded = downloadData.lastDownload || null;
+              lastDownloaded = downloadData.lastDownload || lastDownloaded;
             }
           }
-        } catch (e) {
+        } catch (_) {
           // Ignore parsing errors
         }
+      }
 
-        return {
-          ...request,
-          download_count: downloadCount,
-          last_downloaded: lastDownloaded
-        };
-      });
-    }
+      return {
+        ...request,
+        download_count: downloadCount,
+        last_downloaded: lastDownloaded,
+      };
+    });
 
-    res.json(requests);
+    res.json(formattedRequests);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching requests' });
