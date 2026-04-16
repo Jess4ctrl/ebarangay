@@ -88,11 +88,20 @@ export default function UserDashboard() {
     }
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('en-PH', {
-      year: 'numeric', month: 'short', day: 'numeric'
-    });
+  const handleDownload = async (request) => {
+    try {
+      // Track the download on the backend
+      await api.post(`/requests/${request.id}/download`);
+      
+      // Then download the file
+      const fileUrl = `${import.meta.env.VITE_API_URL}/${request.file_path}`;
+      window.open(fileUrl, '_blank');
+    } catch (err) {
+      console.error('Error tracking download:', err);
+      // Still download even if tracking fails
+      const fileUrl = `${import.meta.env.VITE_API_URL}/${request.file_path}`;
+      window.open(fileUrl, '_blank');
+    }
   };
 
   // Filter by search (ID, type, status, date) AND status tab
@@ -232,14 +241,12 @@ export default function UserDashboard() {
                                 <Eye className="w-3.5 h-3.5" /> View
                               </button>
                               {r.status === 'completed' && r.file_path && (
-                                <a
-                                  href={`${import.meta.env.VITE_API_URL}/${r.file_path}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
+                                <button
+                                  onClick={() => handleDownload(r)}
                                   className="flex items-center gap-1 text-xs text-green-600 hover:underline font-medium"
                                 >
                                   <Download className="w-3.5 h-3.5" /> Download
-                                </a>
+                                </button>
                               )}
                             </div>
                           </td>

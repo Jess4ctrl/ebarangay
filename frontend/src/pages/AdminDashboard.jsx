@@ -264,7 +264,7 @@ export default function AdminDashboard() {
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
-                      {['Request ID', 'Name', 'Service Type', 'Status', 'Date Submitted', 'Actions'].map(h => (
+                      {['Request ID', 'Name', 'Service Type', 'Status', 'Downloads', 'Date Submitted', 'Actions'].map(h => (
                         <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
                           {h}
                         </th>
@@ -278,6 +278,15 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 text-sm font-semibold text-gray-800">{r.full_name}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{r.service_type}</td>
                         <td className="px-6 py-4"><StatusBadge status={r.status} /></td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {r.status === 'completed' ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs">
+                              {r.download_count || 0}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-xs">—</span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-500">{formatDate(r.createdAt || r.created_at)}</td>
                         <td className="px-6 py-4">
                           <button

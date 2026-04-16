@@ -1,13 +1,41 @@
-const { ServiceRequest, User } = require('../models/index');
+const { ServiceRequest, User, DocumentDownload } = require('../models/index');
 const { generateDocument }     = require('../services/pdfService');
 const { sendStatusEmail }      = require('../services/emailService');
+const sequelize = require('sequelize');
 
 exports.getAllRequests = async (req, res) => {
   try {
     const requests = await ServiceRequest.findAll({
+      attributes: [
+        'id', 'request_id', 'user_id', 'full_name', 'service_type', 
+        'purpose', 'status', 'admin_remarks', 'file_path', 'created_at', 'updated_at'
+      ],
+      include: [{
+        model: DocumentDownload,
+        attributes: [],
+        required: false,
+        duplicating: false,
+      }],
+      attributes: {
+        include: [
+          [sequelize.fn('COUNT', sequelize.col('DocumentDownloads.id')), 'download_count'],
+          [sequelize.fn('MAX', sequelize.col('DocumentDownloads.last_downloaded')), 'last_downloaded'],
+        ]
+      },
+      group: ['ServiceRequest.id'],
       order: [['created_at', 'DESC']],
+      subQuery: false,
+      raw: true,
     });
-    res.json(requests);
+
+    // Convert download_count to number format
+    const formattedRequests = requests.map(r => ({
+      ...r,
+      download_count: parseInt(r.download_count) || 0,
+      last_downloaded: r.last_downloaded || null,
+    }));
+
+    res.json(formattedRequests);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching requests' });
@@ -132,5 +160,35 @@ exports.uploadDocument = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error uploading document' });
+  }
+};
+
+exports.getDownloadStats = async (req, res) => {
+  try {
+    const downloads = await DocumentDownload.findAll({
+      attributes: [
+        'request_id',
+        [sequelize.fn('SUM', sequelize.col('download_count')), 'total_downloads'],
+        [sequelize.fn('MAX', sequelize.col('last_downloaded')), 'last_downloaded'],
+      ],
+      include: [{
+        model: ServiceRequest,
+        attributes: ['id', 'request_id', 'full_name', 'service_type', 'status'],
+        required: true,
+      }, {
+        model: User,
+        attributes: ['id', 'full_name', 'email'],
+        required: true,
+      }],
+      group: ['ServiceRequest.id', 'User.id'],
+      order: [[sequelize.fn('SUM', sequelize.col('download_count')), 'DESC']],
+      subQuery: false,
+      raw: true,
+    });
+
+    res.json(downloads);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error fetching download stats' });
   }
 };

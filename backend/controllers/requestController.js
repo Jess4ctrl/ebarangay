@@ -1,4 +1,4 @@
-const { ServiceRequest, User } = require('../models/index');
+const { ServiceRequest, User, DocumentDownload } = require('../models/index');
 const { sendStatusEmail }      = require('../services/emailService');
 
 exports.submitRequest = async (req, res) => {
@@ -64,5 +64,44 @@ exports.getRequestById = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error fetching request' });
+  }
+};
+
+exports.trackDownload = async (req, res) => {
+  try {
+    const { request_id } = req.params;
+    const user_id = req.user.id;
+
+    // Find existing download record
+    const existingDownload = await DocumentDownload.findOne({
+      where: { request_id, user_id }
+    });
+
+    if (existingDownload) {
+      // Increment download count and update last downloaded time
+      await existingDownload.update({
+        download_count: existingDownload.download_count + 1,
+        last_downloaded: new Date()
+      });
+      res.json({
+        message: 'Download tracked',
+        download: existingDownload
+      });
+    } else {
+      // Create new download record
+      const newDownload = await DocumentDownload.create({
+        request_id,
+        user_id,
+        download_count: 1,
+        last_downloaded: new Date()
+      });
+      res.status(201).json({
+        message: 'Download tracked',
+        download: newDownload
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error tracking download' });
   }
 };
