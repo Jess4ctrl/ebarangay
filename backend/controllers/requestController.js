@@ -72,6 +72,8 @@ exports.trackDownload = async (req, res) => {
     const { request_id } = req.params;
     const user_id = req.user.id;
 
+    console.log('🔄 Download tracking called:', { request_id, user_id });
+
     // Find existing download record
     const existingDownload = await DocumentDownload.findOne({
       where: { request_id, user_id }
@@ -83,6 +85,7 @@ exports.trackDownload = async (req, res) => {
         download_count: existingDownload.download_count + 1,
         last_downloaded: new Date()
       });
+      console.log('✅ Download count incremented:', existingDownload.download_count + 1);
       res.json({
         message: 'Download tracked',
         download: existingDownload
@@ -95,13 +98,14 @@ exports.trackDownload = async (req, res) => {
         download_count: 1,
         last_downloaded: new Date()
       });
+      console.log('✅ New download record created');
       res.status(201).json({
         message: 'Download tracked',
         download: newDownload
       });
     }
   } catch (err) {
-    console.error(err);
+    console.error('❌ Download tracking error:', err);
     res.status(500).json({ message: 'Server error tracking download' });
   }
 };
